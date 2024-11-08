@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maincra - Calculadora de Coordenadas</title>
+    <style>
+        /* Asegura que la página sea completamente adaptable a pantallas de diferentes tamaños */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, button {
+            width: 100%;
+            height: 40px;
+            font-size: 16px;
+            margin-top: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #resultado {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Mejora la visibilidad en pantallas pequeñas */
+        @media (max-width: 600px) {
+            body {
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 1.2em;
+            }
+
+            input, button {
+                font-size: 18px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Maincra - Calculadora de Coordenadas</h1>
+
+    <div id="menu">
+        <button onclick="mostrarStrongholdForm()">Calcular Stronghold</button>
+        <button onclick="mostrarPortalForm()">Calcular Coordenadas del Portal</button>
+        <button onclick="salir()">Salir</button>
+    </div>
+
+    <!-- Formulario para calcular Stronghold -->
+    <div id="strongholdForm" class="hidden">
+        <h2>Calcular Stronghold</h2>
+        <label for="direccion">Dirección (N/S o E/O):</label>
+        <input type="text" id="direccion">
+
+        <label for="distancia">Distancia (c):</label>
+        <input type="number" id="distancia">
+
+        <label for="angulo1">Ángulo 1 (h1) en grados:</label>
+        <input type="number" id="angulo1">
+
+        <label for="angulo2">Ángulo 2 (h2) en grados:</label>
+        <input type="number" id="angulo2">
+
+        <button onclick="calcularStronghold()">Calcular</button>
+    </div>
+
+    <!-- Formulario para calcular coordenadas del portal -->
+    <div id="portalForm" class="hidden">
+        <h2>Calcular Coordenadas del Portal</h2>
+        <label for="x">Coordenada X del portal:</label>
+        <input type="number" id="x">
+
+        <label for="z">Coordenada Z del portal:</label>
+        <input type="number" id="z">
+
+        <label>Elige una opción:</label>
+        <input type="radio" id="overworld" name="portalOption" value="1" checked>
+        <label for="overworld">Overworld</label>
+        <input type="radio" id="nether" name="portalOption" value="2">
+        <label for="nether">Nether</label>
+
+        <button onclick="obtenerCoordenadasPortal()">Calcular</button>
+    </div>
+
+    <h3 id="resultado">Resultado:</h3>
+
+    <script>
+        // Función para calcular la tangente de un ángulo en grados
+        function tanDeg(angle) {
+            return Math.tan(angle * Math.PI / 180);
+        }
+
+        // Función para mostrar el formulario de Stronghold
+        function mostrarStrongholdForm() {
+            document.getElementById('strongholdForm').classList.remove('hidden');
+            document.getElementById('portalForm').classList.add('hidden');
+        }
+
+        // Función para mostrar el formulario de Portal
+        function mostrarPortalForm() {
+            document.getElementById('strongholdForm').classList.add('hidden');
+            document.getElementById('portalForm').classList.remove('hidden');
+        }
+
+        // Función para salir y ocultar todos los formularios
+        function salir() {
+            document.getElementById('strongholdForm').classList.add('hidden');
+            document.getElementById('portalForm').classList.add('hidden');
+            alert('Saliendo...');
+        }
+
+        // Función para calcular las coordenadas del Stronghold
+        function calcularStronghold() {
+            const direccion = document.getElementById('direccion').value.trim().toUpperCase();
+            const c = parseFloat(document.getElementById('distancia').value);
+            const h1 = parseFloat(document.getElementById('angulo1').value);
+            const h2 = parseFloat(document.getElementById('angulo2').value);
+
+            if (isNaN(c) || isNaN(h1) || isNaN(h2)) {
+                alert('Por favor ingresa valores válidos.');
+                return;
+            }
+
+            let x, z;
+            if (direccion === 'N' || direccion === 'S') {
+                x = -c / (tanDeg(90 - h1) - tanDeg(90 - h2));
+                z = (c * tanDeg(90 - h1)) / (tanDeg(90 - h1) - tanDeg(90 - h2));
+            } else {
+                x = (c * tanDeg(h1)) / (tanDeg(h1) - tanDeg(h2));
+                z = -c / (tanDeg(h1) - tanDeg(h2));
+            }
+
+            document.getElementById('resultado').textContent = `Coordenadas del Stronghold: X = ${x.toFixed(2)}, Z = ${z.toFixed(2)}`;
+        }
+
+        // Función para obtener las coordenadas del portal
+        function obtenerCoordenadasPortal() {
+            const x = parseInt(document.getElementById('x').value);
+            const z = parseInt(document.getElementById('z').value);
+            const opcion = document.querySelector('input[name="portalOption"]:checked').value;
+
+            if (isNaN(x) || isNaN(z)) {
+                alert('Por favor ingresa valores válidos para las coordenadas.');
+                return;
+            }
+
+            let result = '';
+            if (opcion === '1') {
+                // Coordenadas para Overworld
+                result = `Las coordenadas del Overworld son (${8 * x}, ${8 * z})`;
+            } else if (opcion === '2') {
+                // Coordenadas para Nether
+                result = `Las coordenadas del Nether son (${x / 8}, ${z / 8})`;
+            } else {
+                result = 'Opción no válida.';
+            }
+
+            document.getElementById('resultado').textContent = result;
+        }
+    </script>
+</body>
+</html>
